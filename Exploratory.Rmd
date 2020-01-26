@@ -1,0 +1,992 @@
+---
+title: "Exploratory Sustainability Survey Analysis"
+author: "Blain Morin"
+date: "January 21, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, cache = TRUE)
+
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(gridExtra)
+library(ggridges)
+library(readr)
+library(scales)
+library(ggcorrplot)
+
+
+survey = read_csv("2019 Campus Sustainability Survey - Final_January 9, 2020_13.47.clean.deidentified.Jeff.csv")
+
+```
+
+```{r}
+
+### Select my columns
+mydata = survey[, c(11:25, 41:49, 56:68, 191:194, 223:301, 304:305, 314, 316, 326:328)]
+mydata = mydata[-c(1,2), ]
+
+```
+
+# Jeff's Questions
+
+## To What Extent does "sustainability" involve the following dimensions?
+
+### Environmental Outcomes
+
+```{r}
+
+### Environmental Outcomes
+
+mydata = mydata %>%
+  filter(Q102_1 != "-99") %>%
+  mutate(Q102_1 = ifelse(Q102_1 == "Never", "1", Q102_1)) %>%
+  mutate(Q102_1 = ifelse(Q102_1 == "Rarely", "2", Q102_1)) %>%
+  mutate(Q102_1 = ifelse(Q102_1 == "Sometimes", "3", Q102_1)) %>%
+  mutate(Q102_1 = ifelse(Q102_1 == "Frequently", "4", Q102_1)) %>%
+  mutate(Q102_1 = ifelse(Q102_1 == "Very Frequently", "5", Q102_1)) %>%
+  mutate(Q102_1 = as.numeric(Q102_1)) 
+  
+  
+mydata %>%
+  filter(Pol.aff != "-99") %>%
+  filter(Pol.aff != "Other (please describe):")%>%
+  filter(Pol.aff != "Libertarian") %>%
+  ggplot(aes(x = Q102_1)) +
+  geom_density_ridges(aes(y = Pol.aff, fill = Pol.aff)) +
+  facet_wrap(~Gender) +
+  ylab("") +
+  xlab("1 = Never, 5 = Very Frequently") +
+  ggtitle("Density Plot: Environmental Outcomes, By Gender") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("#619CFF", "#00BA38", "#F8766D"))
+
+
+```
+
+### Economic Outcomes
+
+```{r}
+
+### Economic Outcomes
+
+mydata = mydata %>%
+  filter(Q102_2 != "-99") %>%
+  mutate(Q102_2 = ifelse(Q102_2 == "Never", "1", Q102_2)) %>%
+  mutate(Q102_2 = ifelse(Q102_2 == "Rarely", "2", Q102_2)) %>%
+  mutate(Q102_2 = ifelse(Q102_2 == "Sometimes", "3", Q102_2)) %>%
+  mutate(Q102_2 = ifelse(Q102_2 == "Frequently", "4", Q102_2)) %>%
+  mutate(Q102_2 = ifelse(Q102_2 == "Very Frequently", "5", Q102_2)) %>%
+  mutate(Q102_2 = as.numeric(Q102_2)) 
+
+
+mydata %>%
+  filter(Pol.aff != "-99") %>%
+  filter(Pol.aff != "Other (please describe):")%>%
+  filter(Pol.aff != "Libertarian") %>%
+  ggplot(aes(x = Q102_2)) +
+  geom_density_ridges(aes(y = Pol.aff, fill = Pol.aff)) +
+  facet_wrap(~Gender) +
+  ylab("") +
+  xlab("1 = Never, 5 = Very Frequently") +
+  ggtitle("Density Plot: Economic Outcomes, By Gender") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("#619CFF", "#00BA38", "#F8766D"))
+
+
+```
+
+### Social Outcomes
+
+```{r}
+
+### Social Outcomes
+
+mydata = mydata %>%
+  filter(Q102_3 != "-99") %>%
+  mutate(Q102_3 = ifelse(Q102_3 == "Never", "1", Q102_3)) %>%
+  mutate(Q102_3 = ifelse(Q102_3 == "Rarely", "2", Q102_3)) %>%
+  mutate(Q102_3 = ifelse(Q102_3 == "Sometimes", "3", Q102_3)) %>%
+  mutate(Q102_3 = ifelse(Q102_3 == "Frequently", "4", Q102_3)) %>%
+  mutate(Q102_3 = ifelse(Q102_3 == "Very Frequently", "5", Q102_3)) %>%
+  mutate(Q102_3 = as.numeric(Q102_3)) 
+
+
+mydata %>%
+  filter(Pol.aff != "-99") %>%
+  filter(Pol.aff != "Other (please describe):")%>%
+  filter(Pol.aff != "Libertarian") %>%
+  ggplot(aes(x = Q102_3)) +
+  geom_density_ridges(aes(y = Pol.aff, fill = Pol.aff)) +
+  facet_wrap(~Gender) +
+  ylab("") +
+  xlab("1 = Never, 5 = Very Frequently") +
+  ggtitle("Density Plot: Social Outcomes, By Gender") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("#619CFF", "#00BA38", "#F8766D"))
+
+
+```
+
+# deGroot Egoistic Values
+
+```{r}
+
+### Social Power Corrected
+
+mydata = mydata %>%
+  filter(deGroot_3 != "-99") %>%
+  mutate(deGroot_3 = ifelse(deGroot_3 == "Important (3)", "3", deGroot_3)) %>%
+  mutate(deGroot_3 = ifelse(deGroot_3 == "Not important (0)", "0", deGroot_3)) %>%
+  mutate(deGroot_3 = ifelse(deGroot_3 == "Of supreme importance (7)", "7", deGroot_3)) %>%
+  mutate(deGroot_3 = ifelse(deGroot_3 == "Opposed to my Values (-1)", "-1", deGroot_3)) %>%
+  mutate(deGroot_3 = ifelse(deGroot_3 == "Very important (6)", "6", deGroot_3)) %>%
+  mutate(deGroot_3 = as.numeric(deGroot_3)) %>%
+  mutate(deGroot_3 = deGroot_3 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_3)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Social Power: Control Over Others") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Wealth Corrected
+
+mydata = mydata %>%
+  filter(deGroot_4 != "-99") %>%
+  mutate(deGroot_4 = ifelse(deGroot_4 == "Important (3)", "3", deGroot_4)) %>%
+  mutate(deGroot_4 = ifelse(deGroot_4 == "Not important (0)", "0", deGroot_4)) %>%
+  mutate(deGroot_4 = ifelse(deGroot_4 == "Of supreme importance (7)", "7", deGroot_4)) %>%
+  mutate(deGroot_4 = ifelse(deGroot_4 == "Opposed to my Values (-1)", "-1", deGroot_4)) %>%
+  mutate(deGroot_4 = ifelse(deGroot_4 == "Very important (6)", "6", deGroot_4)) %>%
+  mutate(deGroot_4 = as.numeric(deGroot_4)) %>%
+  mutate(deGroot_4 = deGroot_4 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_4)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Wealth: Material Possessions") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Authority Corrected
+
+mydata = mydata %>%
+  filter(deGroot_5 != "-99") %>%
+  mutate(deGroot_5 = ifelse(deGroot_5 == "Important (3)", "3", deGroot_5)) %>%
+  mutate(deGroot_5 = ifelse(deGroot_5 == "Not important (0)", "0", deGroot_5)) %>%
+  mutate(deGroot_5 = ifelse(deGroot_5 == "Of supreme importance (7)", "7", deGroot_5)) %>%
+  mutate(deGroot_5 = ifelse(deGroot_5 == "Opposed to my Values (-1)", "-1", deGroot_5)) %>%
+  mutate(deGroot_5 = ifelse(deGroot_5 == "Very important (6)", "6", deGroot_5)) %>%
+  mutate(deGroot_5 = as.numeric(deGroot_5)) %>%
+  mutate(deGroot_5 = deGroot_5 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_5)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Authority: The Right to Lead or Command") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Influential Corrected
+
+mydata = mydata %>%
+  filter(deGroot_1 != "-99") %>%
+  mutate(deGroot_1 = ifelse(deGroot_1 == "Important (3)", "3", deGroot_1)) %>%
+  mutate(deGroot_1 = ifelse(deGroot_1 == "Not important (0)", "0", deGroot_1)) %>%
+  mutate(deGroot_1 = ifelse(deGroot_1 == "Of supreme importance (7)", "7", deGroot_1)) %>%
+  mutate(deGroot_1 = ifelse(deGroot_1 == "Opposed to my Values (-1)", "-1", deGroot_1)) %>%
+  mutate(deGroot_1 = ifelse(deGroot_1 == "Very important (6)", "6", deGroot_1)) %>%
+  mutate(deGroot_1 = as.numeric(deGroot_1)) %>%
+  mutate(deGroot_1 = deGroot_1 + 1)
+  
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_1)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Influential: Having an Impact On People's Lives") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Ambitious Corrected
+
+mydata = mydata %>%
+  filter(deGroot_13 != "-99") %>%
+  mutate(deGroot_13 = ifelse(deGroot_13 == "Important (3)", "3", deGroot_13)) %>%
+  mutate(deGroot_13 = ifelse(deGroot_13 == "Not important (0)", "0", deGroot_13)) %>%
+  mutate(deGroot_13 = ifelse(deGroot_13 == "Of supreme importance (7)", "7", deGroot_13)) %>%
+  mutate(deGroot_13 = ifelse(deGroot_13 == "Opposed to my Values (-1)", "-1", deGroot_13)) %>%
+  mutate(deGroot_13 = ifelse(deGroot_13 == "Very important (6)", "6", deGroot_13)) %>%
+  mutate(deGroot_13 = as.numeric(deGroot_13)) %>%
+  mutate(deGroot_13 = deGroot_13 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_13)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Ambitious: Hardowrking, Aspiring") +
+  theme_classic() 
+
+
+```
+
+
+# deGroot Altriustic Values
+
+```{r}
+
+### Equality Corrected
+
+mydata = mydata %>%
+  filter(deGroot_6 != "-99") %>%
+  mutate(deGroot_6 = ifelse(deGroot_6 == "Important (3)", "3", deGroot_6)) %>%
+  mutate(deGroot_6 = ifelse(deGroot_6 == "Not important (0)", "0", deGroot_6)) %>%
+  mutate(deGroot_6 = ifelse(deGroot_6 == "Of supreme importance (7)", "7", deGroot_6)) %>%
+  mutate(deGroot_6 = ifelse(deGroot_6 == "Opposed to my Values (-1)", "-1", deGroot_6)) %>%
+  mutate(deGroot_6 = ifelse(deGroot_6 == "Very important (6)", "6", deGroot_6)) %>%
+  mutate(deGroot_6 = as.numeric(deGroot_6)) %>%
+  mutate(deGroot_6 = deGroot_6 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_6)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Equality: Equal Opportunity for All") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### World Peace Corrected
+
+mydata = mydata %>%
+  filter(deGroot_7 != "-99") %>%
+  mutate(deGroot_7 = ifelse(deGroot_7 == "Important (3)", "3", deGroot_7)) %>%
+  mutate(deGroot_7 = ifelse(deGroot_7 == "Not important (0)", "0", deGroot_7)) %>%
+  mutate(deGroot_7 = ifelse(deGroot_7 == "Of supreme importance (7)", "7", deGroot_7)) %>%
+  mutate(deGroot_7 = ifelse(deGroot_7 == "Opposed to my Values (-1)", "-1", deGroot_7)) %>%
+  mutate(deGroot_7 = ifelse(deGroot_7 == "Very important (6)", "6", deGroot_7)) %>%
+  mutate(deGroot_7 = as.numeric(deGroot_7)) %>%
+  mutate(deGroot_7 = deGroot_7 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_7)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("World Peace: Free of War and Conflict") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Social Justice Corrected
+
+mydata = mydata %>%
+  filter(deGroot_9 != "-99") %>%
+  mutate(deGroot_9 = ifelse(deGroot_9 == "Important (3)", "3", deGroot_9)) %>%
+  mutate(deGroot_9 = ifelse(deGroot_9 == "Not important (0)", "0", deGroot_9)) %>%
+  mutate(deGroot_9 = ifelse(deGroot_9 == "Of supreme importance (7)", "7", deGroot_9)) %>%
+  mutate(deGroot_9 = ifelse(deGroot_9 == "Opposed to my Values (-1)", "-1", deGroot_9)) %>%
+  mutate(deGroot_9 = ifelse(deGroot_9 == "Very important (6)", "6", deGroot_9)) %>%
+  mutate(deGroot_9 = as.numeric(deGroot_9)) %>%
+  mutate(deGroot_9 = deGroot_9 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_9)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Social Justice: Correcting Injustice, Care for the Weak") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Helpful Corrected
+
+mydata = mydata %>%
+  filter(deGroot_2 != "-99") %>%
+  mutate(deGroot_2 = ifelse(deGroot_2 == "Important (3)", "3", deGroot_2)) %>%
+  mutate(deGroot_2 = ifelse(deGroot_2 == "Not important (0)", "0", deGroot_2)) %>%
+  mutate(deGroot_2 = ifelse(deGroot_2 == "Of supreme importance (7)", "7", deGroot_2)) %>%
+  mutate(deGroot_2 = ifelse(deGroot_2 == "Opposed to my Values (-1)", "-1", deGroot_2)) %>%
+  mutate(deGroot_2 = ifelse(deGroot_2 == "Very important (6)", "6", deGroot_2)) %>%
+  mutate(deGroot_2 = as.numeric(deGroot_2)) %>%
+  mutate(deGroot_2 = deGroot_2 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_2)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Helpful: Working for the Welfare of Others") +
+  theme_classic() 
+
+
+```
+
+# deGroot Biospheric Values
+
+```{r}
+
+### Preventing Pollution Corrected
+
+mydata = mydata %>%
+  filter(deGroot_11 != "-99") %>%
+  mutate(deGroot_11 = ifelse(deGroot_11 == "Important (3)", "3", deGroot_11)) %>%
+  mutate(deGroot_11 = ifelse(deGroot_11 == "Not important (0)", "0", deGroot_11)) %>%
+  mutate(deGroot_11 = ifelse(deGroot_11 == "Of supreme importance (7)", "7", deGroot_11)) %>%
+  mutate(deGroot_11 = ifelse(deGroot_11 == "Opposed to my Values (-1)", "-1", deGroot_11)) %>%
+  mutate(deGroot_11 = ifelse(deGroot_11 == "Very important (6)", "6", deGroot_11)) %>%
+  mutate(deGroot_11 = as.numeric(deGroot_11)) %>%
+  mutate(deGroot_11 = deGroot_11 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_11)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Preventing Pollution: Protecting Natural Resources") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Respecting the Earth Corrected
+
+mydata = mydata %>%
+  filter(deGroot_12 != "-99") %>%
+  mutate(deGroot_12 = ifelse(deGroot_12 == "Important (3)", "3", deGroot_12)) %>%
+  mutate(deGroot_12 = ifelse(deGroot_12 == "Not important (0)", "0", deGroot_12)) %>%
+  mutate(deGroot_12 = ifelse(deGroot_12 == "Of supreme importance (7)", "7", deGroot_12)) %>%
+  mutate(deGroot_12 = ifelse(deGroot_12 == "Opposed to my Values (-1)", "-1", deGroot_12)) %>%
+  mutate(deGroot_12 = ifelse(deGroot_12 == "Very important (6)", "6", deGroot_12)) %>%
+  mutate(deGroot_12 = as.numeric(deGroot_12)) %>%
+  mutate(deGroot_12 = deGroot_12 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_12)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Respecting the Earth: Harmony with Other Species") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Unity with Nature Corrected
+
+mydata = mydata %>%
+  filter(deGroot_8 != "-99") %>%
+  mutate(deGroot_8 = ifelse(deGroot_8 == "Important (3)", "3", deGroot_8)) %>%
+  mutate(deGroot_8 = ifelse(deGroot_8 == "Not important (0)", "0", deGroot_8)) %>%
+  mutate(deGroot_8 = ifelse(deGroot_8 == "Of supreme importance (7)", "7", deGroot_8)) %>%
+  mutate(deGroot_8 = ifelse(deGroot_8 == "Opposed to my Values (-1)", "-1", deGroot_8)) %>%
+  mutate(deGroot_8 = ifelse(deGroot_8 == "Very important (6)", "6", deGroot_8)) %>%
+  mutate(deGroot_8 = as.numeric(deGroot_8)) %>%
+  mutate(deGroot_8 = deGroot_8 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_8)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Unity with Nature: Fitting Into Nature") +
+  theme_classic() 
+
+
+```
+
+```{r}
+
+### Protecting the Environment Corrected
+
+mydata = mydata %>%
+  filter(deGroot_10 != "-99") %>%
+  mutate(deGroot_10 = ifelse(deGroot_10 == "Important (3)", "3", deGroot_10)) %>%
+  mutate(deGroot_10 = ifelse(deGroot_10 == "Not important (0)", "0", deGroot_10)) %>%
+  mutate(deGroot_10 = ifelse(deGroot_10 == "Of supreme importance (7)", "7", deGroot_10)) %>%
+  mutate(deGroot_10 = ifelse(deGroot_10 == "Opposed to my Values (-1)", "-1", deGroot_10)) %>%
+  mutate(deGroot_10 = ifelse(deGroot_10 == "Very important (6)", "6", deGroot_10)) %>%
+  mutate(deGroot_10 = as.numeric(deGroot_10)) %>%
+  mutate(deGroot_10 = deGroot_10 + 1)
+
+mydata %>%
+  filter(Gender != "#N/A") %>%
+  ggplot(aes(x = deGroot_10)) +
+  geom_density(aes(color = Gender), size = 2) +
+  facet_wrap(~RaceEthnicity) +
+  ylab("Density") +
+  xlab("0 = Opposed to my Values, 8 = Of Supreme Importance") +
+  ggtitle("Protecting the Environment: Preserving Nature") +
+  theme_classic() 
+
+
+```
+
+
+# Correlation Between deGroot Values and Sustainability Dimensions
+
+```{r}
+
+mydata = mydata %>%
+  mutate(AveEgo = (deGroot_3 + deGroot_4 + deGroot_5 + deGroot_1 +deGroot_13)/5) %>%
+  mutate(AveAlt = (deGroot_6 + deGroot_7 + deGroot_9 + deGroot_2)/4) %>%
+  mutate(AveBio = (deGroot_11 + deGroot_12 + deGroot_8 + deGroot_10)/4)
+
+
+egodata = mydata%>%
+  select(AveEgo, AveAlt, AveBio, Q102_1, Q102_2, Q102_3) %>%
+  rename("Egoistic Values" = AveEgo) %>%
+  rename("Altruistic Values" = AveAlt) %>%
+  rename("Biospheric Values" = AveBio) %>%
+  rename(Environmental = Q102_1) %>%
+  rename(Economic = Q102_2) %>%
+  rename(Social = Q102_3)
+
+corr1 = round(cor(egodata), 2)
+
+ggcorrplot(corr1, type = "lower",
+   lab = TRUE) 
+
+```
+
+# Correlation Between Values and Party Affiliation
+
+```{r}
+
+mydata = mydata %>%
+  mutate(AveEgo = (deGroot_3 + deGroot_4 + deGroot_5 + deGroot_1 +deGroot_13)/5) %>%
+  mutate(AveAlt = (deGroot_6 + deGroot_7 + deGroot_9 + deGroot_2)/4) %>%
+  mutate(AveBio = (deGroot_11 + deGroot_12 + deGroot_8 + deGroot_10)/4)
+
+
+egodata = mydata%>%
+  select(AveEgo, AveAlt, AveBio, Pol.aff) %>%
+  filter(Pol.aff != "-99") %>%
+  filter(Pol.aff != "Other (please describe):") %>%
+  filter(Pol.aff != "Libertarian") %>%
+  filter(Pol.aff != "Independent (no leanings toward either party)") %>%
+  mutate(Pol.aff = ifelse(Pol.aff == "Democrat", 0, 1)) %>%
+  mutate(Pol.aff = as.numeric(Pol.aff)) %>%
+  rename("Egoistic Values" = AveEgo) %>%
+  rename("Altruistic Values" = AveAlt) %>%
+  rename("Biospheric Values" = AveBio) %>%
+  rename("Affiliates as Republican" = Pol.aff)
+
+corr1 = round(cor(egodata), 2)
+
+ggcorrplot(corr1, type = "lower",
+   lab = TRUE) 
+
+```
+
+# Correlation Between deGroot and Interest in Food, Agriculture, Energy, and Water
+
+```{r}
+
+Q96data = mydata%>%
+  select(AveEgo, AveAlt, AveBio, Q96_1, Q96_2, Q96_3, Q96_4) %>%
+  rename("Egoistic Values" = AveEgo) %>%
+  rename("Altruistic Values" = AveAlt) %>%
+  rename("Biospheric Values" = AveBio) %>%
+  filter(Q96_1 != "-99") %>%
+  filter(Q96_2 != "-99") %>%
+  filter(Q96_3 != "-99") %>%
+  filter(Q96_4 != "-99") %>%
+  mutate(Q96_1 = ifelse(Q96_1 == "A good deal", 4, Q96_1)) %>%
+  mutate(Q96_1 = ifelse(Q96_1 == "A great deal", 5, Q96_1)) %>%
+  mutate(Q96_1 = ifelse(Q96_1 == "A little", 2, Q96_1)) %>%
+  mutate(Q96_1 = ifelse(Q96_1 == "A moderate amount", 3, Q96_1)) %>%
+  mutate(Q96_1 = ifelse(Q96_1 == "Not at all", 1, Q96_1)) %>%
+  mutate(Q96_1 = as.numeric(Q96_1)) %>%
+  mutate(Q96_2 = ifelse(Q96_2 == "A good deal", 4, Q96_2)) %>%
+  mutate(Q96_2 = ifelse(Q96_2 == "A great deal", 5, Q96_2)) %>%
+  mutate(Q96_2 = ifelse(Q96_2 == "A little", 2, Q96_2)) %>%
+  mutate(Q96_2 = ifelse(Q96_2 == "A moderate amount", 3, Q96_2)) %>%
+  mutate(Q96_2 = ifelse(Q96_2 == "Not at all", 1, Q96_2)) %>%
+  mutate(Q96_2 = as.numeric(Q96_2)) %>%
+  mutate(Q96_3 = ifelse(Q96_3 == "A good deal", 4, Q96_3)) %>%
+  mutate(Q96_3 = ifelse(Q96_3 == "A great deal", 5, Q96_3)) %>%
+  mutate(Q96_3 = ifelse(Q96_3 == "A little", 2, Q96_3)) %>%
+  mutate(Q96_3 = ifelse(Q96_3 == "A moderate amount", 3, Q96_3)) %>%
+  mutate(Q96_3 = ifelse(Q96_3 == "Not at all", 1, Q96_3))%>%
+  mutate(Q96_3 = as.numeric(Q96_3)) %>%
+  mutate(Q96_4 = ifelse(Q96_4 == "A good deal", 4, Q96_4)) %>%
+  mutate(Q96_4 = ifelse(Q96_4 == "A great deal", 5, Q96_4)) %>%
+  mutate(Q96_4 = ifelse(Q96_4 == "A little", 2, Q96_4)) %>%
+  mutate(Q96_4 = ifelse(Q96_4 == "A moderate amount", 3, Q96_4)) %>%
+  mutate(Q96_4 = ifelse(Q96_4 == "Not at all", 1, Q96_4)) %>%
+  mutate(Q96_4 = as.numeric(Q96_4)) %>%
+  rename("Food" = Q96_1) %>%
+  rename("Agriculture" = Q96_2) %>%
+  rename("Energy" = Q96_3) %>%
+  rename("Water" = Q96_4)
+  
+
+corr1 = round(cor(Q96data), 2)
+
+ggcorrplot(corr1, type = "lower",
+   lab = TRUE) +
+  ggtitle("deGroot Values and Interest in Nexus")
+
+Q96data %>%
+  ggplot(aes(x = jitter(Q96data$`Egoistic Values`))) +
+  geom_point(aes(y = jitter(Food)), color = 'red', alpha = .2) +
+  geom_point(aes(y = jitter(Agriculture)), color = 'yellow', alpha = .2) +
+  geom_point(aes(y = jitter(Energy)), color = 'green', alpha = .2) +
+  geom_point(aes(y = jitter(Water)), color = 'blue', alpha = .2) +
+  geom_smooth(aes(x = Q96data$`Egoistic Values`, y = Food), method = "lm", se = F, color = 'red') +
+  geom_smooth(aes(x = Q96data$`Egoistic Values`, y = Agriculture), method = "lm", se = F, color = 'yellow') +
+  geom_smooth(aes(x = Q96data$`Egoistic Values`, y = Energy), method = "lm", se = F, color = 'green') + geom_smooth(aes(x = Q96data$`Egoistic Values`, y = Water), method = "lm", se = F, color = 'blue') +
+  xlab("Egoistic Values") +
+  ylab("Food = red, Agriculture = yellow, Energy = green, Water = Blue") +
+  ggtitle("Egoistic Values Versus Interest in Nexus") +
+  theme_classic()
+
+Q96data %>%
+  ggplot(aes(x = jitter(Q96data$`Altruistic Values`))) +
+  geom_point(aes(y = jitter(Food)), color = 'red', alpha = .2) +
+  geom_point(aes(y = jitter(Agriculture)), color = 'yellow', alpha = .2) +
+  geom_point(aes(y = jitter(Energy)), color = 'green', alpha = .2) +
+  geom_point(aes(y = jitter(Water)), color = 'blue', alpha = .2) +
+  geom_smooth(aes(x = Q96data$`Altruistic Values`, y = Food), method = "lm", se = F, color = 'red') +
+  geom_smooth(aes(x = Q96data$`Altruistic Values`, y = Agriculture), method = "lm", se = F, color = 'yellow') +
+  geom_smooth(aes(x = Q96data$`Altruistic Values`, y = Energy), method = "lm", se = F, color = 'green') + geom_smooth(aes(x = Q96data$`Altruistic Values`, y = Water), method = "lm", se = F, color = 'blue') +
+  xlab("Altruistic Values") +
+  ylab("Food = red, Agriculture = yellow, Energy = green, Water = Blue") +
+  ggtitle("Altruistic Values Versus Interest in Nexus") +
+  theme_classic()
+
+Q96data %>%
+  ggplot(aes(x = jitter(Q96data$`Biospheric Values`))) +
+  geom_point(aes(y = jitter(Food)), color = 'red', alpha = .2) +
+  geom_point(aes(y = jitter(Agriculture)), color = 'yellow', alpha = .2) +
+  geom_point(aes(y = jitter(Energy)), color = 'green', alpha = .2) +
+  geom_point(aes(y = jitter(Water)), color = 'blue', alpha = .2) +
+  geom_smooth(aes(x = Q96data$`Biospheric Values`, y = Food), method = "lm", se = F, color = 'red') +
+  geom_smooth(aes(x = Q96data$`Biospheric Values`, y = Agriculture), method = "lm", se = F, color = 'yellow') +
+  geom_smooth(aes(x = Q96data$`Biospheric Values`, y = Energy), method = "lm", se = F, color = 'green') + geom_smooth(aes(x = Q96data$`Biospheric Values`, y = Water), method = "lm", se = F, color = 'blue') +
+  xlab("Biospheric Values") +
+  ylab("Food = red, Agriculture = yellow, Energy = green, Water = Blue") +
+  ggtitle("Biospheric Values Versus Interest in Nexus") +
+  theme_classic()
+
+```
+
+
+
+# Behaviors
+
+```{r}
+
+#### Walk instead of Drive
+
+mydata %>%
+  filter(Behavior_1 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_1, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Walk, Bike, or Take Public Transportation Instead of Driving, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+
+```
+
+```{r}
+
+#### Eat Organic Food
+
+mydata %>%
+  filter(Behavior_2 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_2, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Eat Organic Food, by Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Eat Meat
+
+mydata %>%
+  filter(Behavior_3 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_3, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Eat Meat, by Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+
+```
+
+```{r}
+
+#### Eat Milk Cheese Yogurt
+
+mydata %>%
+  filter(Behavior_4 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_4, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Eat Milk, Cheese, Eggs, or Yogurt, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Print on Both Sides of Paper
+
+mydata %>%
+  filter(Behavior_5 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_5, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Print on Both Sides of the Paper, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Carry a Reusable Water Bottle
+
+mydata %>%
+  filter(Behavior_6 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_6, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Carry a Reusable Watter Bottle, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Purchase Used Instead of New
+
+mydata %>%
+  filter(Behavior_7 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_7, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Purchase Used Instead of New, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Use Reusable bags when shopping
+
+mydata %>%
+  filter(Behavior_8 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_8, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Use Reusable BagesWhen Shopping, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Sort Recycling
+
+mydata %>%
+  filter(Behavior_9 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_9, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Sort Recycling, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Turn of Lights in an Empty Room 
+
+mydata %>%
+  filter(Behavior_10 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_10, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Turn Off Lights in an Empty Room Where You Live, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Turn your electronics off or low power mode
+
+mydata %>%
+  filter(Behavior_11 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_11, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Turn Electronics Off when not in Use, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Use Stairs when Going More Than One Floor
+
+mydata %>%
+  filter(Behavior_12 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_12, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Use the Stairs When Going More Than One Floor, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Act to conserve water
+
+mydata %>%
+  filter(Behavior_13 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_13, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Act to Conserve Water When Doing Chores, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Limit your consumption of new items
+
+mydata %>%
+  filter(Behavior_14 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_14, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Limit Your Consumption of New Items, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+```{r}
+
+#### Limit the Energy Used for Heat or AC
+
+mydata %>%
+  filter(Behavior_15 != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Behavior_15, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  xlab("How often do you do these behaviors?") +
+  ylab("Count") +
+  ggtitle("Limit the Energy Used for Haat or AC, By Race and Gender") +
+  theme_classic() +
+  scale_x_discrete(limits=c("Never", "Rarely", "Sometimes",
+                            "Often", "Always")) +
+   theme(axis.text.x = element_text(angle=90))
+
+```
+
+# Diet
+
+```{r}
+
+#### Limit the Energy Used for Heat or AC
+
+mydata$Diet = as.factor(mydata$Diet)
+levels(mydata$Diet) = c("Lifestyle Vegan" ,"Omnivorous",
+                        "Semi-Vegetarian", "Strict Vegetarian", "Vegetarian", "-99")
+
+mydata %>%
+  filter(Diet != "-99") %>%
+  filter(Gender != "#N/A") %>%
+  filter(Gender != "#Name?") %>%
+  ggplot(aes(x = Diet, fill = Gender)) +
+  geom_bar() +
+  facet_wrap(~RaceEthnicity) +
+  theme_classic() +
+  ylab("Count") +
+  ggtitle("Diet, By Race and Gender")+
+   theme(axis.text.x = element_text(angle=90)) +
+  scale_x_discrete(limits=c("Lifestyle Vegan", "Strict Vegetarian", "Vegetarian",
+                            "Semi-Vegetarian", "Omnivorous"))
+```
+
+
+
